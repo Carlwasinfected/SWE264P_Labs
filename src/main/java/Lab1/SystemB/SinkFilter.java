@@ -22,7 +22,9 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 public class SinkFilter extends FilterFramework
 {
@@ -44,9 +46,12 @@ public class SinkFilter extends FilterFramework
 		int id;							// This is the measurement id
 		int i;							// This is a loop counter
 		StringBuilder currentFrame = new StringBuilder();
+
 		FileWriter csvWriter = null;
 		try {
-			csvWriter = new FileWriter("OutputA.csv", true);  // set as append mod
+			csvWriter = new FileWriter("OutputB.csv", true);  // set as append mod
+			String header = "Time,Velocity,Altitude,Pressure,Temperature\n";
+			csvWriter.append(header);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -115,21 +120,25 @@ public class SinkFilter extends FilterFramework
 					currentFrame.append(TimeStampFormat.format(TimeStamp.getTime()));
 					currentFrame.append(',');
 				}
-				if (id >= 1 && id <= 3)
+				if (id == 1 || id == 2 || id == 3)
 				{
-					// current measurement is Velocity, Altitude or Pressure
+					// current measurement is Velocity, Altitude (No Wild Jumps)
 					currentFrame.append(Double.longBitsToDouble(measurement));
 					currentFrame.append(',');
 				}
-
+				if (id == 6) {
+					// current measurement is updated Altitude (Wild Jumps)
+					currentFrame.append(Double.longBitsToDouble(measurement));
+					currentFrame.append("*,");
+				}
 				if ( id == 4 )
 				{
+					// current measurement is temperature
 					currentFrame.append(Double.longBitsToDouble(measurement));
 					currentFrame.append('\n');
 					csvWriter.write(currentFrame.toString());
-					currentFrame.setLength(0); // clear current string builder
+					currentFrame.setLength(0); // clear current string builder, ready for the next frame
 				}
-
 			}
 			/*******************************************************************************
 			*	The EndOfStreamExeception below is thrown when you reach end of the input

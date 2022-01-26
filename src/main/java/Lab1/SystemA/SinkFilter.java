@@ -19,8 +19,11 @@
 * Internal Methods: None
 ******************************************************************************************************************/
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -43,10 +46,16 @@ public class SinkFilter extends FilterFramework
 		long measurement;				// This is the word used to store all measurements - conversions are illustrated.
 		int id;							// This is the measurement id
 		int i;							// This is a loop counter
+        String outputPath = "OutputA.csv";
 		StringBuilder currentFrame = new StringBuilder();
 		FileWriter csvWriter = null;
 		try {
-			csvWriter = new FileWriter("OutputA.csv", true);  // set as append mod
+            if (Files.exists(Path.of(outputPath))) {
+                Files.delete(Path.of(outputPath));
+            }
+			csvWriter = new FileWriter(outputPath, true);  // set as append mod
+			String header = "Time,Velocity,Altitude,Pressure,Temperature\n";
+			csvWriter.append(header);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -110,6 +119,13 @@ public class SinkFilter extends FilterFramework
 				****************************************************************************/
 				if ( id == 0 )
 				{
+					// flush if the current buffer is not empty
+					if (currentFrame.length() > 0) {
+						currentFrame.append('\n');
+						csvWriter.write(currentFrame.toString()); // write to local disk
+						currentFrame.setLength(0); // reset
+					}
+
 					// current measurement is Time
 					TimeStamp.setTimeInMillis(measurement);
 					currentFrame.append(TimeStampFormat.format(TimeStamp.getTime()));
@@ -125,9 +141,6 @@ public class SinkFilter extends FilterFramework
 				if ( id == 4 )
 				{
 					currentFrame.append(Double.longBitsToDouble(measurement));
-					currentFrame.append('\n');
-					csvWriter.write(currentFrame.toString());
-					currentFrame.setLength(0); // clear current string builder
 				}
 
 			}
@@ -138,6 +151,15 @@ public class SinkFilter extends FilterFramework
 			********************************************************************************/
 			catch (EndOfStreamException | IOException e)
 			{
+				// flush the last frame in the buffer
+				if (currentFrame.length() > 0) {
+					try {
+						csvWriter.write(currentFrame.toString());
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					}
+				}
+
 				ClosePorts();
 				System.out.print( "\n" + this.getName() + "::Sink Exiting; bytes read: " + bytesread );
 				break;

@@ -1,8 +1,15 @@
+import com.sun.jdi.LongType;
+
 import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -41,11 +48,21 @@ public class MiddleFilter extends FilterFramework
 		int VAL_LENGTH = 8;
 		double currentAltitude;
 		FileWriter csvWriter = null;
+		StringBuilder currentFrame = new StringBuilder();
+		boolean isAltChanged = false;
+		String outputPath = "WildPoints.csv";
+		Calendar timeStamp = Calendar.getInstance();
+		SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy MM dd::hh:mm:ss:SSS");
+
 		try {
-			csvWriter = new FileWriter("WildPoints.csv", true);  // set as append mod
+			if (Files.exists(Path.of(outputPath))) {
+				Files.delete(Path.of(outputPath));
+			}
+
+			csvWriter = new FileWriter(outputPath, true);  // set as append mod
 			String header = "Time,Velocity,Altitude,Pressure,Temperature\n";
 			csvWriter.append(header);
-		} catch (IOException e) {
+		} catch (IOException | NullPointerException e) {
 			e.printStackTrace();
 		}
 
@@ -58,7 +75,7 @@ public class MiddleFilter extends FilterFramework
 			// Here we read a byte and write a byte
 			try
 			{
-				// get current id
+				/* process each ID of current frame */
 				id = 0;
 				for (i=0; i<ID_LENGTH; i++ )
 				{
@@ -71,7 +88,7 @@ public class MiddleFilter extends FilterFramework
 					bytesread++;						// Increment the byte count
 				}
 
-				// get current val (long type, 8 bytes, 64 bits
+				/* Process each data of current frame */
 				val = 0;
 				for (i=0; i<VAL_LENGTH; i++ )
 				{
@@ -85,28 +102,51 @@ public class MiddleFilter extends FilterFramework
 					bytesread++;									// Increment the byte count
 				}
 
+				if (id == 0) {
+					if (currentFrame.length() > 0) {
+						// ignore and reset
+						if (isAltChanged) {
+							// flush *previous* wild points frame as record to the local disk
+							currentFrame.append('\n');
+							csvWriter.write(currentFrame.toString());
+						}
+						currentFrame.setLength(0);  // reset
+						isAltChanged = false; // reset flag
+					}
+
+					timeStamp.setTimeInMillis(val);
+					currentFrame.append(timeStampFormat.format(timeStamp.getTime()));
+					currentFrame.append(',');
+				}
+
+				if (id == 1 || id == 3) {
+					currentFrame.append(Double.longBitsToDouble(val));
+					currentFrame.append(',');
+				}
+
 				// check the alt of adjacent frame, see if it needs to revise
 				if (id == 2) {
 					currentAltitude = updateAltWhenWildJumps(Double.longBitsToDouble(val));
+					// note that should keep original value to wildpoints.csv
+					currentFrame.append(Double.longBitsToDouble(val));
 
 					// update
 					ppreAltiture = preAltitude;
 					preAltitude = currentAltitude;
 					if (currentAltitude != Double.longBitsToDouble(val)) {
-						// replacement occurred
+						// replacement occurred, update
+						isAltChanged = true;
 						id = 6;
-
-						// write wild point record to local disk
-						StringBuilder sb = new StringBuilder();
-						sb.append(Double.longBitsToDouble(val));
-						sb.append('\n');
-						csvWriter.write(sb.toString());
-						sb.setLength(0);
+						val = Double.doubleToLongBits(currentAltitude);
 					}
 				}
 
+				if (id == 4) {
+					currentFrame.append(Double.longBitsToDouble(val));
+				}
 
-				/* Write date byte by byte to the next filter */
+
+				/* Write current <ID-Value> of current frame byte by byte to the next filter */
 				byte[] idBufferArray = ByteBuffer.allocate(ID_LENGTH).putInt(id).array();
 				byte[] valBufferArray = ByteBuffer.allocate(VAL_LENGTH).putLong(val).array();
 
@@ -122,6 +162,18 @@ public class MiddleFilter extends FilterFramework
 			}
 			catch (EndOfStreamException | IOException e)
 			{
+				// flush the last frame if it was changed
+				if (currentFrame.length() > 0 && isAltChanged) {
+					currentFrame.append('\n');
+					try {
+						csvWriter.write(currentFrame.toString());
+						csvWriter.close();
+					} catch (IOException ex) {
+						ex.printStackTrace();
+					} finally {
+						currentFrame.setLength(0);
+					}
+				}
 				ClosePorts();
 				System.out.print( "\n" + this.getName() + "::Middle Exiting; bytes read: " + bytesread + " bytes written: " + byteswritten );
 				break;

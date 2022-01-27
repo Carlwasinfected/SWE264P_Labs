@@ -187,11 +187,12 @@ public class MiddleFilter extends FilterFramework
 		}
 	}
 
-	/**
+	/** Convert the value of `incorrect` altitude to be correct, if needed. If the input value itself is
+	 *  defined as correct, the function will simply return its identical value.
 	 *
-	 * @param now:
+	 * @param now:  double-type value of altitude
 	 *
-	 * @return:
+	 * @return: the original or updated altitude value, if needed
 	 */
    private double updateAltWhenWildJumps(double now) {
 	   if (preAltitude == Double.MAX_VALUE) {

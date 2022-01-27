@@ -14,9 +14,14 @@
   - `javac *.java`
   - `java Plumber`
   > The output file is located at `src/main/java/Lab1/SystemA/WildPoints.csv` 
-  > and `src/main/java/Lab1/SystemA/OutputB.csv`.
+  > and `src/main/java/Lab1/SystemA/OutputB.csv`. 
 
-The output csv files from the case I was provided with are also available at `src/main/java/Lab1/MyCaseOutput`.
+### Notes: 
+- For the implementation in System B, I changed the id of "incorrect" altitude from `2` to `6`.
+  Since `6` is an unused value of each id, so when the `SinkFilter` reaches a data with an id of `6` afterward,
+  the program will know the data was changed previously and should append a `*` at the end of the data
+  when writing this record to the CSV file on local disk.
+- The output csv files from the case I was provided with are also available at `src/main/java/Lab1/MyCaseOutput`.
 
 *Thank you for reviewing, for any issues, feel free to contact me [here](mailto:canw7@uci.edu).  :)*
 

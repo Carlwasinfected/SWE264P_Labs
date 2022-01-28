@@ -21,8 +21,8 @@
   Since `6` is an unused value of each id, so when the `SinkFilter` reaches a data with an id of `6` afterward,
   the program will know the data was changed previously and should append a `*` at the end of the data
   when writing this record to the CSV file on local disk.
-- In my implementation, if the the altitude was changed, then the *previous altitude* for the next altitude to compare with will be its updated value,
-  instead of the original one.
+- In my implementation, if the altitude was changed, then the *previous altitude* for the next altitude to compare with
+  will be its updated value, instead of the original one.
 - The output csv files from the case I was provided with are also available at `src/main/java/Lab1/MyCaseOutput`.
 
 *Thank you for reviewing, for any issues, feel free to contact me [here](mailto:canw7@uci.edu).  :)*

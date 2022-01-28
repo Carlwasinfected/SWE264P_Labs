@@ -17,6 +17,8 @@
   > and `src/main/java/Lab1/SystemB/OutputB.csv`. 
 
 ### Notes: 
+- To use different input test cases, you need to change the variable named `fileName` at `SourceFilter.java`.
+  The default file used is `.../Lab1/DataSets/FlightData.dat`.
 - For the implementation in System B, I changed the id of "incorrect" altitude from `2` to `6`.
   Since `6` is an unused value of each id, so when the `SinkFilter` reaches a data with an id of `6` afterward,
   the program will know the data was changed previously and should append a `*` at the end of the data

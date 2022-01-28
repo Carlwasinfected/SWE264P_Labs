@@ -129,15 +129,19 @@ public class MiddleFilter extends FilterFramework
 					currentAltitude = updateAltWhenWildJumps(Double.longBitsToDouble(val));
 					// note that should keep original value to wildpoints.csv
 					currentFrame.append(Double.longBitsToDouble(val));
+					currentFrame.append(',');
+
 
 					// update
 					ppreAltiture = preAltitude;
 					preAltitude = currentAltitude;
+
+
 					if (currentAltitude != Double.longBitsToDouble(val)) {
 						// replacement occurred, update
 						isAltChanged = true;
 						id = 6;
-						val = Double.doubleToLongBits(currentAltitude);
+						val = Double.doubleToLongBits(currentAltitude); // send updated alt to the output port
 					}
 				}
 
@@ -209,7 +213,7 @@ public class MiddleFilter extends FilterFramework
 		   } else {
 			   // met third frame or afterwards
 			   if (Math.abs(now - preAltitude) > 100) {
-				   now = (preAltitude + ppreAltiture) / 2.0;
+				   return (preAltitude + ppreAltiture) / 2.0;
 			   }
 		   }
 	   }

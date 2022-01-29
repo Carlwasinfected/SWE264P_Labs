@@ -21,8 +21,10 @@
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,6 +51,8 @@ public class SinkFilter extends FilterFramework
 		int i;							// This is a loop counter
 		String outputPath = "OutputB.csv";
 		StringBuilder currentFrame = new StringBuilder();
+		DecimalFormat df = new DecimalFormat("0.00000");
+		df.setRoundingMode(RoundingMode.DOWN);
 
 		FileWriter csvWriter = null;
 		try {
@@ -136,18 +140,18 @@ public class SinkFilter extends FilterFramework
 				if (id == 1 || id == 2 || id == 3)
 				{
 					// current measurement is Velocity, Altitude (No Wild Jumps)
-					currentFrame.append(Double.longBitsToDouble(measurement));
+					currentFrame.append(df.format(Double.longBitsToDouble(measurement)));
 					currentFrame.append(',');
 				}
 				if (id == 6) {
 					// current measurement is updated Altitude (Wild Jumps)
-					currentFrame.append(Double.longBitsToDouble(measurement));
+					currentFrame.append(df.format(Double.longBitsToDouble(measurement)));
 					currentFrame.append("*,");
 				}
 				if ( id == 4 )
 				{
 					// current measurement is temperature
-					currentFrame.append(Double.longBitsToDouble(measurement));
+					currentFrame.append(df.format(Double.longBitsToDouble(measurement)));
 				}
 			}
 			/*******************************************************************************

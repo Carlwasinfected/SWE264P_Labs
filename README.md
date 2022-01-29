@@ -25,7 +25,8 @@
   when writing this record to the CSV file on local disk.
 - In my implementation, if the altitude was changed, then the *previous altitude* for the next altitude to compare with
   will be its updated value, instead of the original one.
-- The output csv files from the case I was provided with are also available at `src/main/java/Lab1/MyCaseOutput`.
+- The output csv files from the case I was provided with are also available at `src/main/java/Lab1/MyCaseOutput`. The 
+  original non-truncate intermediate files are at `.../MyCaseOutput/RawResultsWithoutTruncating`. 
 
 *Thank you for reviewing, for any issues, feel free to contact me [here](mailto:canw7@uci.edu).  :)*
 

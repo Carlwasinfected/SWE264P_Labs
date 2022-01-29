@@ -3,10 +3,12 @@ import com.sun.jdi.LongType;
 import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Time;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -52,7 +54,9 @@ public class MiddleFilter extends FilterFramework
 		boolean isAltChanged = false;
 		String outputPath = "WildPoints.csv";
 		Calendar timeStamp = Calendar.getInstance();
-		SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy MM dd::hh:mm:ss:SSS");
+		SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy MM dd::hh:mm:ss");
+		DecimalFormat df = new DecimalFormat("0.00000");
+		df.setRoundingMode(RoundingMode.DOWN);
 
 		try {
 			if (Files.exists(Path.of(outputPath))) {
@@ -120,7 +124,7 @@ public class MiddleFilter extends FilterFramework
 				}
 
 				if (id == 1 || id == 3) {
-					currentFrame.append(Double.longBitsToDouble(val));
+					currentFrame.append(df.format(Double.longBitsToDouble(val)));
 					currentFrame.append(',');
 				}
 
@@ -128,7 +132,7 @@ public class MiddleFilter extends FilterFramework
 				if (id == 2) {
 					currentAltitude = updateAltWhenWildJumps(Double.longBitsToDouble(val));
 					// note that should keep original value to wildpoints.csv
-					currentFrame.append(Double.longBitsToDouble(val));
+					currentFrame.append(df.format(Double.longBitsToDouble(val)));
 					currentFrame.append(',');
 
 
@@ -146,7 +150,7 @@ public class MiddleFilter extends FilterFramework
 				}
 
 				if (id == 4) {
-					currentFrame.append(Double.longBitsToDouble(val));
+					currentFrame.append(df.format(Double.longBitsToDouble(val)));
 				}
 
 
